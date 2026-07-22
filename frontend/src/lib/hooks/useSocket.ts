@@ -12,7 +12,7 @@ export function useSocket() {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      socketRef.current = io('http://localhost:3001', {
+      socketRef.current = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
         auth: {
           token: `Bearer ${token}`
         }
