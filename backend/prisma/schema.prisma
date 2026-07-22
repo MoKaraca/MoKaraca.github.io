@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String          @id @default(cuid())
+  externalId    String?         @unique    // SSO external ID
+  email         String          @unique
+  password      String?         // Hashed password
+  name          String
+  avatarUrl     String?
+  role          Role            @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  borrowRecords BorrowRecord[]
+  extensions    ExtensionRequest[]
+  readingProgress ReadingProgress[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+}
+
+enum Role {
+  USER              // End user
+  ADMIN             // Executive Manager
+  SUPER_ADMIN       // Services Office Manager
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  nameAr      String?
+  nameTr      String?
+  slug        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  books       Book[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Book {
+  id              String           @id @default(cuid())
+  title           String
+  titleAr         String?
+  titleTr         String?
+  author          String
+  isbn            String?          @unique
+  description     String?
+  coverImageUrl   String?
+  fileUrl         String?          // PDF/EPUB file path
+  pageCount       Int?
+  publishedYear   Int?
+  publisher       String?
+  language        String           @default("en")
+  categoryId      String
+  category        Category         @relation(fields: [categoryId], references: [id])
+  isAvailable     Boolean          @default(true)
+  totalCopies     Int              @default(1)
+  availableCopies Int              @default(1)
+  keywords        String[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  borrowRecords   BorrowRecord[]
+  readingProgress ReadingProgress[]
+  bookmarks       Bookmark[]
+
+  @@index([title, author])
+  @@index([categoryId])
+}
+
+model BorrowRecord {
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  bookId        String
+  book          Book              @relation(fields: [bookId], references: [id])
+  borrowedAt    DateTime          @default(now())
+  dueDate       DateTime          // borrowedAt + 14 days
+  returnedAt    DateTime?
+  status        BorrowStatus      @default(ACTIVE)
+  extensions    ExtensionRequest[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([bookId])
+  @@index([status])
+}
+
+enum BorrowStatus {
+  PENDING
+  ACTIVE
+  RETURNED
+  OVERDUE
+  EXPIRED   // Auto-returned after expiry
+  REJECTED
+}
+
+model ExtensionRequest {
+  id              String         @id @default(cuid())
+  borrowRecordId  String
+  borrowRecord    BorrowRecord   @relation(fields: [borrowRecordId], references: [id])
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  requestedAt     DateTime       @default(now())
+  status          ExtensionStatus @default(PENDING)
+  newDueDate      DateTime?      // dueDate + 7 days
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reason          String?
+
+  @@index([borrowRecordId])
+}
+
+enum ExtensionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ReadingProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id])
+  currentPage Int      @default(1)
+  totalPages  Int?
+  percentage  Float    @default(0)
+  lastReadAt  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, bookId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  pageNumber Int
+  label     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, bookId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+enum NotificationType {
+  BORROW_CONFIRMATION
+  DUE_REMINDER        // 3 days before, 1 day before
+  DUE_TODAY
+  OVERDUE
+  EXTENSION_APPROVED
+  EXTENSION_REJECTED
+  BOOK_RETURNED
+  SYSTEM
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+}
