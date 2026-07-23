@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-background font-sans overflow-hidden">
       {/* Top Left Theme Toggle */}
-      <div className="absolute top-6 left-6 z-50">
+      <div className="absolute top-6 right-6 rtl:left-6 rtl:right-auto z-50">
         <Button
           variant="outline"
           size="icon"
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <Card className="border-0 shadow-xl bg-card rounded-3xl p-6 sm:p-10">
             <CardContent className="p-0">
               {/* Logo Animation */}
-              <div className="flex justify-center mb-8 mt-12 md:mt-0">
+              <div className="flex justify-center mb-8 mt-16 lg:mt-0">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}

@@ -267,7 +267,7 @@ const translations = {
     "login.sso_btn": "المتابعة عبر بوابة الطلاب",
     "login.hero_subtitle": "وصول آمن للمجتمع",
     "login.hero_title": "حيث يلتقي الطموح بالانتماء.",
-    "login.hero_desc": "منزل رقمي احترافي يربط الطلاب السوريين، الأفكار، الفرص، والإنجازات الأكاديمية في أرضروم.",
+    "login.hero_desc": "منزل رقمي احترافي يربط الطلاب السوريين، الأفكار، الفرص، والإنجازات الأكاديمية في أرزروم.",
     "login.stats.students": "الطلاب",
     "login.stats.events": "الفعاليات",
     "login.stats.opportunities": "الفرص",
