@@ -264,6 +264,19 @@ export class BorrowsService {
     });
   }
 
+  async findPendingExtensions() {
+    return this.prisma.extensionRequest.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        user: true,
+        borrowRecord: {
+          include: { book: true }
+        }
+      },
+      orderBy: { requestedAt: 'desc' }
+    });
+  }
+
   async approveExtension(id: string) {
     return this.prisma.$transaction(async (tx) => {
       const req = await tx.extensionRequest.findUnique({

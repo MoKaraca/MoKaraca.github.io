@@ -38,6 +38,12 @@ export class BorrowsController {
   }
 
   @Roles('ADMIN')
+  @Get('extensions/pending')
+  findPendingExtensions() {
+    return this.borrowsService.findPendingExtensions();
+  }
+
+  @Roles('ADMIN')
   @Patch(':id/approve')
   approveBorrowRequest(@Param('id') id: string) {
     return this.borrowsService.approveBorrowRequest(id);

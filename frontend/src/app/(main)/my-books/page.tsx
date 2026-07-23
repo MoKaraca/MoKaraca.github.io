@@ -15,6 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, CalendarClock, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/components/language-provider";
 import Link from "next/link";
 
@@ -25,6 +26,9 @@ import { Loader2 } from "lucide-react";
 export default function MyBooksPage() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("active");
+  const [extendingBorrowId, setExtendingBorrowId] = useState<string | null>(null);
+  const [extensionReason, setExtensionReason] = useState("");
+  const [isSubmittingExt, setIsSubmittingExt] = useState(false);
 
   const { data: borrows, error, isLoading, mutate } = useSWR('/borrows/my', api.get);
 
@@ -40,6 +44,22 @@ export default function MyBooksPage() {
   const calculateDaysLeft = (dueDate: string) => {
     const diff = new Date(dueDate).getTime() - Date.now();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const handleExtend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!extendingBorrowId) return;
+    setIsSubmittingExt(true);
+    try {
+      await api.post(`/borrows/${extendingBorrowId}/extend`, { reason: extensionReason });
+      setExtendingBorrowId(null);
+      setExtensionReason("");
+      mutate();
+    } catch (err) {
+      alert("Failed to request extension");
+    } finally {
+      setIsSubmittingExt(false);
+    }
   };
 
   return (
@@ -66,6 +86,8 @@ export default function MyBooksPage() {
               const isPending = borrow.status === "PENDING";
               const daysLeft = isPending ? 0 : calculateDaysLeft(borrow.dueDate);
               const isDueSoon = !isPending && daysLeft <= 3;
+              const latestExtension = borrow.extensions && borrow.extensions.length > 0 ? borrow.extensions[borrow.extensions.length - 1] : null;
+              const hasExtensionRequested = !!latestExtension;
 
               return (
                 <Card key={borrow.id} className={`overflow-hidden border-muted/50 shadow-sm ${isDueSoon ? 'border-amber-500/30' : ''}`}>
@@ -106,16 +128,16 @@ export default function MyBooksPage() {
                           </div>
                         </div>
                         
-                        {borrow.extensionRequested && (
+                        {hasExtensionRequested && (
                           <div className="bg-muted/50 p-3 rounded-lg flex items-start gap-2 text-sm">
-                            {borrow.extensionStatus === "PENDING" ? (
+                            {latestExtension.status === "PENDING" ? (
                                <Clock className="w-4 h-4 text-amber-500 mt-0.5" />
                             ) : (
                                <CheckCircle2 className="w-4 h-4 text-[var(--color-brand-green)] mt-0.5" />
                             )}
                             <div>
                               <p className="font-medium text-foreground">{t("borrows.ext_req")}</p>
-                              <p className="text-muted-foreground text-xs">{t("borrows.status")} {borrow.extensionStatus}</p>
+                              <p className="text-muted-foreground text-xs">{t("borrows.status")} {latestExtension.status}</p>
                             </div>
                           </div>
                         )}
@@ -131,10 +153,31 @@ export default function MyBooksPage() {
                         </Link>
                       )}
                       
-                      {!borrow.extensionRequested && !isPending && daysLeft <= 7 && (
-                        <Button variant="ghost" size="icon" className="border text-muted-foreground hover:text-[var(--color-brand-gold)] border-border" title="Request Extension">
-                          <CalendarClock className="w-4 h-4" />
-                        </Button>
+                      {!hasExtensionRequested && !isPending && daysLeft <= 7 && daysLeft > 0 && (
+                        <Dialog open={extendingBorrowId === borrow.id} onOpenChange={(open) => !open ? setExtendingBorrowId(null) : setExtendingBorrowId(borrow.id)}>
+                          <Button onClick={() => setExtendingBorrowId(borrow.id)} variant="ghost" size="icon" className="border text-muted-foreground hover:text-[var(--color-brand-gold)] border-border" title="Request Extension">
+                            <CalendarClock className="w-4 h-4" />
+                          </Button>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Request Extension</DialogTitle>
+                              <DialogDescription>
+                                You can request a 7-day extension. Please provide a reason for this request.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleExtend}>
+                              <div className="py-4">
+                                <Input required placeholder="Reason for extension..." value={extensionReason} onChange={(e) => setExtensionReason(e.target.value)} />
+                              </div>
+                              <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setExtendingBorrowId(null)}>Cancel</Button>
+                                <Button type="submit" disabled={isSubmittingExt} className="bg-[var(--color-brand-green)] text-white hover:bg-[#15462a]">
+                                  {isSubmittingExt ? "Submitting..." : "Submit Request"}
+                                </Button>
+                              </DialogFooter>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
                       )}
                     </div>
                   </CardContent>
