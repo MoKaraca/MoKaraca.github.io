@@ -114,47 +114,51 @@ export default function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="hover:shadow-md transition-shadow border-muted/50 cursor-pointer">
-            <CardContent className="p-4 flex gap-4 items-center">
-              <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-muted-foreground/50" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-foreground line-clamp-1">Introduction to Algorithms</h3>
-                  <p className="text-sm text-muted-foreground">Thomas H. Cormen</p>
+          <Link href="/my-books" className="block">
+            <Card className="hover:shadow-md transition-shadow border-muted/50 cursor-pointer h-full">
+              <CardContent className="p-4 flex gap-4 items-center h-full">
+                <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-muted-foreground/50" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{t("home.page_of").replace("{current}", "142").replace("{total}", "1292")}</span>
-                    <span>11%</span>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-foreground line-clamp-1">Introduction to Algorithms</h3>
+                    <p className="text-sm text-muted-foreground">Thomas H. Cormen</p>
                   </div>
-                  <Progress value={11} className="h-2 [&>div]:bg-[var(--color-brand-green)]" />
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{t("home.page_of").replace("{current}", "142").replace("{total}", "1292")}</span>
+                      <span>11%</span>
+                    </div>
+                    <Progress value={11} className="h-2 [&>div]:bg-[var(--color-brand-green)]" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
           
-          <Card className="hover:shadow-md transition-shadow border-muted/50 cursor-pointer">
-            <CardContent className="p-4 flex gap-4 items-center">
-              <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-muted-foreground/50" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-foreground line-clamp-1">Principles of Economics</h3>
-                  <p className="text-sm text-muted-foreground">N. Gregory Mankiw</p>
+          <Link href="/my-books" className="block">
+            <Card className="hover:shadow-md transition-shadow border-muted/50 cursor-pointer h-full">
+              <CardContent className="p-4 flex gap-4 items-center h-full">
+                <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-muted-foreground/50" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{t("home.page_of").replace("{current}", "450").replace("{total}", "800")}</span>
-                    <span>56%</span>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-foreground line-clamp-1">Principles of Economics</h3>
+                    <p className="text-sm text-muted-foreground">N. Gregory Mankiw</p>
                   </div>
-                  <Progress value={56} className="h-2 [&>div]:bg-[var(--color-brand-green)]" />
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{t("home.page_of").replace("{current}", "450").replace("{total}", "800")}</span>
+                      <span>56%</span>
+                    </div>
+                    <Progress value={56} className="h-2 [&>div]:bg-[var(--color-brand-green)]" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
 

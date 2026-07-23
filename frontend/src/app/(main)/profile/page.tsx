@@ -10,8 +10,40 @@ import useSWR from "swr";
 import { api } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
+const getLocalizedMessage = (type: string, englishMsg: string, language: string) => {
+  const match = englishMsg.match(/"([^"]+)"/);
+  const bookTitle = match ? match[1] : '';
+  
+  if (language === 'en') return englishMsg;
+
+  switch(type) {
+    case 'DUE_REMINDER':
+      if (englishMsg.includes('7 days')) return `كتابك المستعار "${bookTitle}" يستحق الإرجاع خلال 7 أيام.`;
+      if (englishMsg.includes('3 days')) return `تذكير: كتابك المستعار "${bookTitle}" يستحق الإرجاع خلال 3 أيام.`;
+      if (englishMsg.includes('tomorrow')) return `كتابك المستعار "${bookTitle}" يجب إرجاعه غداً.`;
+      break;
+    case 'DUE_TODAY':
+      return `كتابك المستعار "${bookTitle}" يجب إرجاعه اليوم.`;
+    case 'OVERDUE':
+      return `انتهت فترة استعارة "${bookTitle}". يرجى إرجاعه فوراً.`;
+    case 'SYSTEM':
+      if (englishMsg.includes('expired')) return 'انتهت فترة العقوبة. يمكنك الآن استعارة الكتب مجدداً.';
+      if (englishMsg.includes('Penalty Applied')) return 'قمت بإرجاع كتاب متأخراً. تم تطبيق عقوبة حرمان من الاستعارة لمدة 30 يوماً.';
+      break;
+    case 'BOOK_RETURNED':
+      return `تم تسجيل إرجاعك لكتاب "${bookTitle}" بنجاح.`;
+    case 'EXTENSION_APPROVED':
+      const dateMatch = englishMsg.match(/is (.*)\./);
+      const date = dateMatch ? dateMatch[1] : '';
+      return `تمت الموافقة على طلب تمديد استعارة "${bookTitle}". تاريخ الاستحقاق الجديد هو ${date}.`;
+    case 'EXTENSION_REJECTED':
+      return `تم رفض طلب تمديد استعارة "${bookTitle}".`;
+  }
+  return englishMsg;
+};
+
 export default function ProfilePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const userStore = useAuthStore((state) => state.user);
   
   const { data: profile, isLoading } = useSWR('/users/me', api.get);
@@ -126,9 +158,9 @@ export default function ProfilePage() {
                     {notif.type.includes('DUE') ? <Clock className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm">{notif.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{notif.message}</p>
-                    <p className="text-xs text-muted-foreground mt-2">{new Date(notif.createdAt).toLocaleString()}</p>
+                    <h4 className="font-medium text-sm">{t(`notif.${notif.type}.title`) || notif.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{getLocalizedMessage(notif.type, notif.message, language)}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{new Date(notif.createdAt).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}</p>
                   </div>
                 </div>
               ))}

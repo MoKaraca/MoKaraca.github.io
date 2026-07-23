@@ -46,12 +46,12 @@ export function Sidebar() {
   return (
     <div className="hidden border-r bg-card/50 md:block w-64 lg:w-72 flex-shrink-0 h-[calc(100vh)] sticky top-0 flex flex-col">
       {/* Branding */}
-      <div className="h-16 flex items-center px-6 border-b">
-        <Link href="/home" className="flex items-center gap-2 font-semibold">
-          <div className="w-8 h-8 relative bg-white/10 rounded-md flex items-center justify-center rtl:ml-2">
-            <Image src="/logo.png" alt="Logo" width={24} height={24} />
+      <div className="h-16 flex items-center px-6 border-b pt-2 pb-2">
+        <Link href="/home" className="flex items-center gap-3 font-semibold">
+          <div className="w-10 h-10 relative bg-white/10 rounded-xl flex items-center justify-center rtl:ml-2 shadow-sm border border-border/50">
+            <Image src="/logo.png" alt="Logo" width={28} height={28} />
           </div>
-          <span className="text-[var(--color-brand-green)] tracking-tight">{t("app.title")}</span>
+          <span className="text-[var(--color-brand-green)] tracking-tight text-lg">{t("app.title")}</span>
         </Link>
       </div>
 
@@ -87,7 +87,7 @@ export function Sidebar() {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                    pathname.startsWith(item.href) ? "bg-[var(--color-brand-gold)] text-white hover:bg-[var(--color-brand-gold)] hover:text-white shadow-sm" : "text-muted-foreground"
+                    (item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href)) ? "bg-[var(--color-brand-gold)] text-white hover:bg-[var(--color-brand-gold)] hover:text-white shadow-sm" : "text-muted-foreground"
                   )}
                 >
                   <item.icon className="h-4 w-4 rtl:ml-2" />

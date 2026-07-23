@@ -4,7 +4,8 @@ import { use, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, Globe, Building, FileText, Share2, Heart, ArrowLeft, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { BookOpen, Calendar, Globe, Building, FileText, Share2, Heart, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
@@ -23,6 +24,8 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isBorrowSuccess, setIsBorrowSuccess] = useState(false);
+  const [isBorrowDialogOpen, setIsBorrowDialogOpen] = useState(false);
+  const [isSubmittingBorrow, setIsSubmittingBorrow] = useState(false);
 
   const { data: book, isLoading, error } = useSWR(
     `/books/${resolvedParams.id}`,
@@ -35,15 +38,19 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
       return;
     }
     
+    setIsSubmittingBorrow(true);
     try {
       await api.post(`/borrows/${book.id}`);
       setIsBorrowSuccess(true);
+      setIsBorrowDialogOpen(false);
       mutate('/borrows/my');
       setTimeout(() => {
         router.push("/my-books");
       }, 500);
     } catch (e: any) {
       toast.error(e?.response?.data?.message || e?.message || "Failed to borrow book");
+    } finally {
+      setIsSubmittingBorrow(false);
     }
   };
 
@@ -103,7 +110,7 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
             {user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN" && (
               <motion.div animate={isBorrowSuccess ? { scale: [1, 1.05, 1] } : {}} transition={{ duration: 0.3 }}>
                 <Button 
-                  onClick={handleBorrow} 
+                  onClick={() => setIsBorrowDialogOpen(true)}
                   disabled={isBorrowSuccess}
                   className={`w-full h-12 text-white shadow-md text-md transition-colors ${
                     isBorrowSuccess ? "bg-green-600 hover:bg-green-700" : "bg-[var(--color-brand-green)] hover:bg-[#15462a]"
@@ -111,6 +118,33 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
                 >
                   {isBorrowSuccess ? "Requested! ✓" : (book.isAvailable && book.availableCopies > 0 ? "Request Borrow" : t("details.btn.waitlist"))}
                 </Button>
+                <Dialog open={isBorrowDialogOpen} onOpenChange={setIsBorrowDialogOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-amber-600">
+                        <AlertTriangle className="h-5 w-5" />
+                        {t("details.borrow.warning")}
+                      </DialogTitle>
+                      <DialogDescription className="space-y-3 pt-4 text-base text-foreground">
+                        <p>{t("details.borrow.terms1")}</p>
+                        <p>{t("details.borrow.terms2")}</p>
+                        <p className="font-semibold">{t("details.borrow.terms3")}</p>
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-6">
+                      <Button variant="outline" onClick={() => setIsBorrowDialogOpen(false)}>
+                        {t("action.cancel")}
+                      </Button>
+                      <Button 
+                        onClick={handleBorrow} 
+                        disabled={isSubmittingBorrow}
+                        className="bg-[var(--color-brand-green)] hover:bg-[#15462a] text-white"
+                      >
+                        {isSubmittingBorrow ? "Submitting..." : "Confirm Request"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </motion.div>
             )}
             {book.isAvailable && (

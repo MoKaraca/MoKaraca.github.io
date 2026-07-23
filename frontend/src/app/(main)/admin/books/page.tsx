@@ -34,6 +34,10 @@ export default function AdminBooksPage() {
     isbn: "",
     categoryId: "cmrwboq2t0000ie767ii9fjjj", // default CS category for now
     totalCopies: 1,
+    pageCount: 100,
+    description: "",
+    publisher: "",
+    language: "ar",
   });
 
   const handleDelete = async (id: string) => {
@@ -51,15 +55,18 @@ export default function AdminBooksPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const { categoryId, ...rest } = formData;
       await api.post('/books', {
-        ...formData,
+        ...rest,
         availableCopies: formData.totalCopies,
-        pageCount: 100,
-        language: 'en'
+        category: { connect: { id: categoryId } }
       });
       setIsAddOpen(false);
       mutate();
-      setFormData({ title: "", author: "", isbn: "", categoryId: "cmrwboq2t0000ie767ii9fjjj", totalCopies: 1 });
+      setFormData({ 
+        title: "", author: "", isbn: "", categoryId: "cmrwboq2t0000ie767ii9fjjj", 
+        totalCopies: 1, pageCount: 100, description: "", publisher: "", language: "ar" 
+      });
     } catch (err) {
       alert("Failed to add book");
     } finally {
@@ -84,21 +91,39 @@ export default function AdminBooksPage() {
               <DialogDescription>Enter the book details to add it to the library catalog.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Author</Label>
-                <Input required value={formData.author} onChange={(e) => setFormData({...formData, author: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>ISBN</Label>
-                <Input required value={formData.isbn} onChange={(e) => setFormData({...formData, isbn: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Total Copies</Label>
-                <Input type="number" required min={1} value={formData.totalCopies} onChange={(e) => setFormData({...formData, totalCopies: parseInt(e.target.value)})} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Author</Label>
+                  <Input required value={formData.author} onChange={(e) => setFormData({...formData, author: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ISBN</Label>
+                  <Input required value={formData.isbn} onChange={(e) => setFormData({...formData, isbn: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Copies</Label>
+                  <Input type="number" required min={1} value={formData.totalCopies} onChange={(e) => setFormData({...formData, totalCopies: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Page Count</Label>
+                  <Input type="number" required min={1} value={formData.pageCount} onChange={(e) => setFormData({...formData, pageCount: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Language</Label>
+                  <Input required value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label>Publisher</Label>
+                  <Input value={formData.publisher} onChange={(e) => setFormData({...formData, publisher: e.target.value})} />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label>Description</Label>
+                  <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>

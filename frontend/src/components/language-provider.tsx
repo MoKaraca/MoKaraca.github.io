@@ -23,6 +23,8 @@ const translations = {
     "nav.settings": "Settings",
     "nav.library": "Library",
     "nav.admin": "Administration",
+    "nav.requests": "Requests",
+    "nav.returns": "Returns",
     "app.title": "SOB E-Library",
     "action.search": "Search books, authors...",
     "action.logout": "Log out",
@@ -183,6 +185,15 @@ const translations = {
     "cat.languages": "Languages",
     "cat.law": "Law",
     "cat.literature": "Literature",
+    
+    // Notifications
+    "notif.DUE_REMINDER.title": "Book Due Reminder",
+    "notif.DUE_TODAY.title": "Book Due Today",
+    "notif.OVERDUE.title": "Book Overdue",
+    "notif.SYSTEM.title": "System Notice",
+    "notif.EXTENSION_APPROVED.title": "Extension Approved",
+    "notif.EXTENSION_REJECTED.title": "Extension Rejected",
+    "notif.BOOK_RETURNED.title": "Book Returned",
   },
   ar: {
     // Navigation & Common
@@ -196,7 +207,9 @@ const translations = {
     "nav.settings": "الإعدادات",
     "nav.library": "المكتبة",
     "nav.admin": "الإدارة",
-    "app.title": "مكتبة الطلاب الإلكترونية",
+    "nav.requests": "الطلبات",
+    "nav.returns": "المرتجعات",
+    "app.title": "اتحاد طلبة سوريا - أرزروم",
     "action.search": "ابحث عن كتب، مؤلفين...",
     "action.logout": "تسجيل خروج",
     "action.back": "رجوع",
@@ -356,13 +369,22 @@ const translations = {
     "cat.languages": "اللغات",
     "cat.law": "القانون",
     "cat.literature": "الأدب",
+
+    // Notifications
+    "notif.DUE_REMINDER.title": "تذكير بموعد الإرجاع",
+    "notif.DUE_TODAY.title": "الكتاب مستحق اليوم",
+    "notif.OVERDUE.title": "تأخير في الإرجاع",
+    "notif.SYSTEM.title": "إشعار نظام",
+    "notif.EXTENSION_APPROVED.title": "تمت الموافقة على التمديد",
+    "notif.EXTENSION_REJECTED.title": "تم رفض التمديد",
+    "notif.BOOK_RETURNED.title": "تم إرجاع الكتاب",
   }
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
+  const [language, setLanguageState] = useState<Language>("ar");
 
   useEffect(() => {
     const saved = localStorage.getItem("app_lang") as Language;
