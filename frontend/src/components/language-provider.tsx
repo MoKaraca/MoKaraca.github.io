@@ -94,6 +94,10 @@ const translations = {
     "details.meta.language": "Language",
     "details.meta.publisher": "Publisher",
     "details.tags": "Tags & Keywords",
+    "details.borrow.title": "Borrowing Terms",
+    "details.borrow.terms1": "The maximum borrowing period for this book is 14 days.",
+    "details.borrow.terms2": "You may request an extension of up to 21 days if no other user has requested the book.",
+    "details.borrow.terms3": "Please take good care of the book.",
     "details.isbn": "ISBN",
 
     // My Borrows
@@ -311,6 +315,10 @@ const translations = {
     "details.meta.language": "اللغة",
     "details.meta.publisher": "الناشر",
     "details.tags": "الوسوم والكلمات المفتاحية",
+    "details.borrow.title": "شروط الاستعارة",
+    "details.borrow.terms1": "الحد الأقصى لفترة استعارة هذا الكتاب هو 14 يوماً.",
+    "details.borrow.terms2": "يمكنك طلب تمديد لمدة تصل إلى 21 يوماً إذا لم يقم مستخدم آخر بطلب الكتاب.",
+    "details.borrow.terms3": "يرجى المحافظة على الكتاب.",
     "details.isbn": "ISBN",
 
     // My Borrows

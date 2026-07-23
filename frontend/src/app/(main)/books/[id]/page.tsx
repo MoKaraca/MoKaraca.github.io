@@ -121,9 +121,8 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
                 <Dialog open={isBorrowDialogOpen} onOpenChange={setIsBorrowDialogOpen}>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2 text-amber-600">
-                        <AlertTriangle className="h-5 w-5" />
-                        {t("details.borrow.warning")}
+                      <DialogTitle className="flex items-center gap-2">
+                        {t("details.borrow.title")}
                       </DialogTitle>
                       <DialogDescription className="space-y-3 pt-4 text-base text-foreground">
                         <p>{t("details.borrow.terms1")}</p>
