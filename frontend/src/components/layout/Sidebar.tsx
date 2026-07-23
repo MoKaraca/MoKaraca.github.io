@@ -49,7 +49,7 @@ export function Sidebar() {
       <div className="h-16 flex items-center px-6 border-b pt-2 pb-2">
         <Link href="/home" className="flex items-center gap-3 font-semibold">
           <div className="w-10 h-10 relative bg-white/10 rounded-xl flex items-center justify-center rtl:ml-2 shadow-sm border border-border/50">
-            <Image src="/logo.png" alt="Logo" width={28} height={28} />
+            <Image src="/logo.png" alt="Logo" width={28} height={28} className="rounded-md" />
           </div>
           <span className="text-[var(--color-brand-green)] tracking-tight text-lg">{t("app.title")}</span>
         </Link>

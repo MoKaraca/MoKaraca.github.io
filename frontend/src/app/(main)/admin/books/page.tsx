@@ -32,7 +32,7 @@ export default function AdminBooksPage() {
     title: "",
     author: "",
     isbn: "",
-    categoryId: "cmrwboq2t0000ie767ii9fjjj", // default CS category for now
+    categoryId: "",
     totalCopies: 1,
     pageCount: 100,
     description: "",
@@ -64,7 +64,7 @@ export default function AdminBooksPage() {
       setIsAddOpen(false);
       mutate();
       setFormData({ 
-        title: "", author: "", isbn: "", categoryId: "cmrwboq2t0000ie767ii9fjjj", 
+        title: "", author: "", isbn: "", categoryId: "", 
         totalCopies: 1, pageCount: 100, description: "", publisher: "", language: "ar" 
       });
     } catch (err) {
@@ -73,6 +73,14 @@ export default function AdminBooksPage() {
       setIsSubmitting(false);
     }
   };
+
+  const categoriesMap = new Map();
+  bookList.forEach((b: any) => {
+    if (b.category && b.category.id) {
+      categoriesMap.set(b.category.id, b.category);
+    }
+  });
+  const uniqueCategories = Array.from(categoriesMap.values());
 
   return (
     <div className="space-y-6">
@@ -87,48 +95,69 @@ export default function AdminBooksPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Book</DialogTitle>
-              <DialogDescription>Enter the book details to add it to the library catalog.</DialogDescription>
+              <DialogTitle>{t("admin_books.add.title")}</DialogTitle>
+              <DialogDescription>{t("admin_books.add.desc")}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Title</Label>
+                  <Label>{t("admin_books.add.field.title")}</Label>
                   <Input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Author</Label>
+                  <Label>{t("admin_books.add.field.author")}</Label>
                   <Input required value={formData.author} onChange={(e) => setFormData({...formData, author: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>ISBN</Label>
+                  <Label>{t("admin_books.add.field.isbn")}</Label>
                   <Input required value={formData.isbn} onChange={(e) => setFormData({...formData, isbn: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Total Copies</Label>
+                  <Label>{t("admin_books.add.field.totalCopies")}</Label>
                   <Input type="number" required min={1} value={formData.totalCopies} onChange={(e) => setFormData({...formData, totalCopies: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Page Count</Label>
+                  <Label>{t("admin_books.table.category")}</Label>
+                  <select 
+                    required 
+                    value={formData.categoryId} 
+                    onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="" disabled>Select Category</option>
+                    {uniqueCategories.map((cat: any) => (
+                      <option key={cat.id} value={cat.id}>{t(
+                        cat.name === "Computer Science" ? "cat.cs" :
+                        cat.name === "Business" ? "cat.business" :
+                        cat.name === "Self-Help" ? "cat.self" :
+                        cat.name === "Economics" ? "cat.economics" :
+                        cat.name === "Psychology" ? "cat.psychology" :
+                        cat.name === "History" ? "cat.history" : cat.name
+                      )}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("admin_books.add.field.pageCount")}</Label>
                   <Input type="number" required min={1} value={formData.pageCount} onChange={(e) => setFormData({...formData, pageCount: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Language</Label>
+                  <Label>{t("admin_books.add.field.language")}</Label>
                   <Input required value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label>Publisher</Label>
+                  <Label>{t("admin_books.add.field.publisher")}</Label>
                   <Input value={formData.publisher} onChange={(e) => setFormData({...formData, publisher: e.target.value})} />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label>Description</Label>
+                  <Label>{t("admin_books.add.field.description")}</Label>
                   <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>{t("admin_books.add.btn.cancel")}</Button>
                 <Button type="submit" disabled={isSubmitting} className="bg-[var(--color-brand-green)] text-white hover:bg-[#15462a]">
-                  {isSubmitting ? "Adding..." : "Add Book"}
+                  {isSubmitting ? t("admin_books.add.btn.submitting") : t("admin_books.add.btn.submit")}
                 </Button>
               </DialogFooter>
             </form>

@@ -33,6 +33,38 @@ export function Navbar() {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
 
+  const getLocalizedMessage = (type: string, englishMsg: string, language: string) => {
+    const match = englishMsg.match(/"([^"]+)"/);
+    const bookTitle = match ? match[1] : '';
+    
+    if (language === 'en') return englishMsg;
+  
+    switch(type) {
+      case 'DUE_REMINDER':
+        if (englishMsg.includes('7 days')) return `كتابك المستعار "${bookTitle}" يستحق الإرجاع خلال 7 أيام.`;
+        if (englishMsg.includes('3 days')) return `تذكير: كتابك المستعار "${bookTitle}" يستحق الإرجاع خلال 3 أيام.`;
+        if (englishMsg.includes('tomorrow')) return `كتابك المستعار "${bookTitle}" يجب إرجاعه غداً.`;
+        break;
+      case 'DUE_TODAY':
+        return `كتابك المستعار "${bookTitle}" يجب إرجاعه اليوم.`;
+      case 'OVERDUE':
+        return `انتهت فترة استعارة "${bookTitle}". يرجى إرجاعه فوراً.`;
+      case 'SYSTEM':
+        if (englishMsg.includes('expired')) return 'انتهت فترة العقوبة. يمكنك الآن استعارة الكتب مجدداً.';
+        if (englishMsg.includes('Penalty Applied')) return 'قمت بإرجاع كتاب متأخراً. تم تطبيق عقوبة حرمان من الاستعارة لمدة 30 يوماً.';
+        break;
+      case 'BOOK_RETURNED':
+        return `تم تسجيل إرجاعك لكتاب "${bookTitle}" بنجاح.`;
+      case 'EXTENSION_APPROVED':
+        const dateMatch = englishMsg.match(/is (.*)\./);
+        const date = dateMatch ? dateMatch[1] : '';
+        return `تمت الموافقة على طلب تمديد استعارة "${bookTitle}". تاريخ الاستحقاق الجديد هو ${date}.`;
+      case 'EXTENSION_REJECTED':
+        return `تم رفض طلب تمديد استعارة "${bookTitle}".`;
+    }
+    return englishMsg;
+  };
+
   const { liveNotifications, clearNotifications } = useSocket();
   const { data: pastNotifications, mutate } = useSWR(user ? '/notifications' : null, api.get);
 
@@ -117,10 +149,10 @@ export function Navbar() {
                   allNotifications.slice(0, 10).map((notif: any, i: number) => (
                     <DropdownMenuItem key={notif.id || `live-${i}`} className="flex flex-col items-start p-3 cursor-pointer" onClick={() => handleMarkAsRead(notif.id)}>
                       <div className="flex w-full justify-between gap-2">
-                        <span className={`font-semibold text-sm ${!notif.read ? 'text-[var(--color-brand-green)]' : ''}`}>{notif.title}</span>
+                        <span className={`font-semibold text-sm ${!notif.read ? 'text-[var(--color-brand-green)]' : ''}`}>{t(`notif.${notif.type}.title`) || notif.title}</span>
                         {!notif.read && <span className="h-2 w-2 rounded-full bg-[var(--color-brand-gold)] mt-1 shrink-0" />}
                       </div>
-                      <span className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.message}</span>
+                      <span className="text-xs text-muted-foreground mt-1 line-clamp-2">{getLocalizedMessage(notif.type, notif.message, language)}</span>
                     </DropdownMenuItem>
                   ))
                 ) : (

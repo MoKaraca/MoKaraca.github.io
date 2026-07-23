@@ -41,20 +41,20 @@ export default function AdminReturnsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Return Management</h1>
-        <p className="text-muted-foreground">Manage active borrows and process physical book returns.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("admin.returns.title")}</h1>
+        <p className="text-muted-foreground">{t("admin.returns.desc")}</p>
       </div>
 
       <div className="border rounded-lg bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Book</TableHead>
-              <TableHead>Borrow Date</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="rtl:text-right">{t("admin.returns.table.student")}</TableHead>
+              <TableHead className="rtl:text-right">{t("admin.returns.table.book")}</TableHead>
+              <TableHead className="rtl:text-right">{t("admin.returns.table.borrow_date")}</TableHead>
+              <TableHead className="rtl:text-right">{t("admin.returns.table.due_date")}</TableHead>
+              <TableHead className="rtl:text-right">{t("admin.returns.table.status")}</TableHead>
+              <TableHead className="text-right rtl:text-left">{t("admin.returns.table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,7 +67,7 @@ export default function AdminReturnsPage() {
             ) : activeBorrows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                  No active borrows found.
+                  {t("admin.returns.empty")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -94,7 +94,7 @@ export default function AdminReturnsPage() {
                         {isLate && <AlertTriangle className="w-4 h-4 ml-2" />}
                       </div>
                       <div className={`text-xs ${isLate ? 'text-red-500' : 'text-muted-foreground'}`}>
-                        {isLate ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
+                        {isLate ? `${Math.abs(daysLeft)} ${t("admin.returns.days_overdue")}` : `${daysLeft} ${t("admin.returns.days_left")}`}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -103,10 +103,10 @@ export default function AdminReturnsPage() {
                           ? "bg-red-50 text-red-700 border-red-200" 
                           : "bg-blue-50 text-blue-700 border-blue-200"
                       }>
-                        {isLate ? "OVERDUE" : "ACTIVE"}
+                        {isLate ? t("admin.returns.overdue") : t("admin.returns.active")}
                       </Badge>
                       {req.isExtended && (
-                         <Badge variant="secondary" className="ml-2 text-[10px]">EXTENDED</Badge>
+                         <Badge variant="secondary" className="ml-2 text-[10px]">{t("admin.returns.extended")}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -116,7 +116,7 @@ export default function AdminReturnsPage() {
                         onClick={() => handleReturn(req.id)}
                         disabled={processingId === req.id}
                       >
-                        <ArrowLeftRight className="w-4 h-4 mr-1" /> Return Book
+                        <ArrowLeftRight className="w-4 h-4 mr-1 rtl:mr-0 rtl:ml-1" /> {t("admin.returns.action.return")}
                       </Button>
                     </TableCell>
                   </TableRow>
