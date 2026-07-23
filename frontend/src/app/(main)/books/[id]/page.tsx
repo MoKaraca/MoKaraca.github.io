@@ -194,7 +194,7 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground">
-            <p className="leading-relaxed">{t("details.description")}</p>
+            <p className="leading-relaxed whitespace-pre-wrap">{book.description || t("details.description")}</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 border-y border-border/50">
