@@ -10,6 +10,8 @@ import { BorrowsModule } from './borrows/borrows.module';
 import { AdminModule } from './admin/admin.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminModule,
     BookmarksModule,
     NotificationsModule,
+    ScheduleModule.forRoot(),
+    CronModule,
   ],
   controllers: [AppController],
   providers: [AppService],

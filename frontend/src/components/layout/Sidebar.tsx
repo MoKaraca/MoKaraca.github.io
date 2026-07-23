@@ -13,7 +13,8 @@ import {
   Users,
   Settings,
   BookMarked,
-  Inbox
+  Inbox,
+  ArrowLeftRight
 } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,6 +30,7 @@ const mainNavItems = [
 const adminNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
   { title: "Requests", icon: Inbox, href: "/admin/requests" },
+  { title: "Returns", icon: ArrowLeftRight, href: "/admin/returns" },
   { title: "nav.manage_books", icon: BookMarked, href: "/admin/books" },
   { title: "nav.users", icon: Users, href: "/admin/users" },
   { title: "nav.settings", icon: Settings, href: "/admin/settings" },

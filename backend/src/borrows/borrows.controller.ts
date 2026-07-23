@@ -20,9 +20,10 @@ export class BorrowsController {
     return this.borrowsService.borrowBook(req.user.id, bookId);
   }
 
+  @Roles('ADMIN')
   @Post(':id/return')
   returnBook(@Param('id') id: string, @Request() req: any) {
-    return this.borrowsService.returnBook(req.user.id, id);
+    return this.borrowsService.adminReturnBook(req.user.id, id);
   }
 
   @Post(':id/extend')
@@ -46,5 +47,17 @@ export class BorrowsController {
   @Patch(':id/reject')
   rejectBorrowRequest(@Param('id') id: string) {
     return this.borrowsService.rejectBorrowRequest(id);
+  }
+
+  @Roles('ADMIN')
+  @Patch('extensions/:id/approve')
+  approveExtension(@Param('id') id: string) {
+    return this.borrowsService.approveExtension(id);
+  }
+
+  @Roles('ADMIN')
+  @Patch('extensions/:id/reject')
+  rejectExtension(@Param('id') id: string) {
+    return this.borrowsService.rejectExtension(id);
   }
 }

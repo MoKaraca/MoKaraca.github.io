@@ -25,6 +25,16 @@ model User {
   bookmarks     Bookmark[]
   notifications Notification[]
   activityLogs  ActivityLog[]
+  accountStatus AccountStatus   @default(ACTIVE)
+  penalties     Penalty[]
+  warnings      Warning[]
+}
+
+enum AccountStatus {
+  ACTIVE
+  UNDER_PENALTY
+  RESTRICTED
+  SUSPENDED
 }
 
 enum Role {
@@ -90,6 +100,9 @@ model BorrowRecord {
   extensions    ExtensionRequest[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+  penalties     Penalty[]
+  warnings      Warning[]
+  isExtended    Boolean           @default(false)
 
   @@index([userId])
   @@index([bookId])
@@ -192,4 +205,32 @@ model ActivityLog {
 
   @@index([userId])
   @@index([entity, entityId])
+}
+
+model Penalty {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  borrowRecordId  String?
+  borrowRecord    BorrowRecord? @relation(fields: [borrowRecordId], references: [id])
+  reason          String
+  startDate       DateTime     @default(now())
+  endDate         DateTime
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId, isActive])
+}
+
+model Warning {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  borrowRecordId  String?
+  borrowRecord    BorrowRecord? @relation(fields: [borrowRecordId], references: [id])
+  reason          String
+  createdAt       DateTime     @default(now())
+
+  @@index([userId])
 }

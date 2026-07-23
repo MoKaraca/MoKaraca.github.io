@@ -19,4 +19,18 @@ export class UsersService {
   async create(data: Prisma.UserCreateInput) {
     return this.prisma.user.create({ data });
   }
+
+  async findProfile(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        penalties: { where: { isActive: true } },
+        warnings: true,
+        notifications: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
+  }
 }

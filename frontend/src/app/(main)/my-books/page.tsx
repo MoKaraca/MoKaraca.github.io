@@ -28,7 +28,7 @@ export default function MyBooksPage() {
 
   const { data: borrows, error, isLoading, mutate } = useSWR('/borrows/my', api.get);
 
-  const activeBorrows = borrows?.filter((b: any) => b.status === "ACTIVE" || b.status === "OVERDUE" || b.status === "DUE_SOON") || [];
+  const activeBorrows = borrows?.filter((b: any) => b.status === "ACTIVE" || b.status === "OVERDUE" || b.status === "DUE_SOON" || b.status === "PENDING") || [];
   const pastBorrows = borrows?.filter((b: any) => b.status === "RETURNED") || [];
 
 
@@ -63,8 +63,9 @@ export default function MyBooksPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {activeBorrows.map((borrow: any) => {
-              const daysLeft = calculateDaysLeft(borrow.dueDate);
-              const isDueSoon = daysLeft <= 3;
+              const isPending = borrow.status === "PENDING";
+              const daysLeft = isPending ? 0 : calculateDaysLeft(borrow.dueDate);
+              const isDueSoon = !isPending && daysLeft <= 3;
 
               return (
                 <Card key={borrow.id} className={`overflow-hidden border-muted/50 shadow-sm ${isDueSoon ? 'border-amber-500/30' : ''}`}>
@@ -82,45 +83,55 @@ export default function MyBooksPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-5 space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground uppercase flex items-center gap-1"><Clock className="w-3 h-3" /> {t("borrows.borrowed")}</p>
-                        <p className="text-sm font-medium">{formatDate(borrow.borrowedAt)}</p>
+                    {isPending ? (
+                      <div className="flex flex-col items-center justify-center py-6 text-amber-600 dark:text-amber-500 space-y-2">
+                        <Clock className="w-8 h-8 animate-pulse opacity-50" />
+                        <p className="font-medium">{t("borrows.status.pending") || "Pending Approval"}</p>
+                        <p className="text-xs text-muted-foreground text-center">Your request is waiting for administrator approval.</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className={`text-xs uppercase flex items-center gap-1 ${isDueSoon ? 'text-amber-600 dark:text-amber-500 font-semibold' : 'text-muted-foreground'}`}>
-                          <CalendarClock className="w-3 h-3" /> {t("borrows.due")}
-                        </p>
-                        <p className={`text-sm font-medium ${isDueSoon ? 'text-amber-600 dark:text-amber-500' : ''}`}>
-                          {formatDate(borrow.dueDate)} {t("borrows.days_left").replace("{days}", String(daysLeft))}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {borrow.extensionRequested && (
-                      <div className="bg-muted/50 p-3 rounded-lg flex items-start gap-2 text-sm">
-                        {borrow.extensionStatus === "PENDING" ? (
-                           <Clock className="w-4 h-4 text-amber-500 mt-0.5" />
-                        ) : (
-                           <CheckCircle2 className="w-4 h-4 text-[var(--color-brand-green)] mt-0.5" />
-                        )}
-                        <div>
-                          <p className="font-medium text-foreground">{t("borrows.ext_req")}</p>
-                          <p className="text-muted-foreground text-xs">{t("borrows.status")} {borrow.extensionStatus}</p>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground uppercase flex items-center gap-1"><Clock className="w-3 h-3" /> {t("borrows.borrowed")}</p>
+                            <p className="text-sm font-medium">{formatDate(borrow.borrowedAt)}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className={`text-xs uppercase flex items-center gap-1 ${isDueSoon ? 'text-amber-600 dark:text-amber-500 font-semibold' : 'text-muted-foreground'}`}>
+                              <CalendarClock className="w-3 h-3" /> {t("borrows.due")}
+                            </p>
+                            <p className={`text-sm font-medium ${isDueSoon ? 'text-amber-600 dark:text-amber-500' : ''}`}>
+                              {formatDate(borrow.dueDate)} {t("borrows.days_left").replace("{days}", String(daysLeft))}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                        
+                        {borrow.extensionRequested && (
+                          <div className="bg-muted/50 p-3 rounded-lg flex items-start gap-2 text-sm">
+                            {borrow.extensionStatus === "PENDING" ? (
+                               <Clock className="w-4 h-4 text-amber-500 mt-0.5" />
+                            ) : (
+                               <CheckCircle2 className="w-4 h-4 text-[var(--color-brand-green)] mt-0.5" />
+                            )}
+                            <div>
+                              <p className="font-medium text-foreground">{t("borrows.ext_req")}</p>
+                              <p className="text-muted-foreground text-xs">{t("borrows.status")} {borrow.extensionStatus}</p>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <div className="flex gap-3 pt-2">
-                      <Link href={`/reader/${borrow.bookId}`} className="flex-1">
-                        <Button className="w-full bg-[var(--color-brand-green)] hover:bg-[#15462a] text-white">
-                          {t("borrows.btn.read")}
-                        </Button>
-                      </Link>
+                      {!isPending && (
+                        <Link href={`/reader/${borrow.bookId}`} className="flex-1">
+                          <Button className="w-full bg-[var(--color-brand-green)] hover:bg-[#15462a] text-white">
+                            {t("borrows.btn.read")}
+                          </Button>
+                        </Link>
+                      )}
                       
-
-
-                      {!borrow.extensionRequested && daysLeft <= 7 && (
+                      {!borrow.extensionRequested && !isPending && daysLeft <= 7 && (
                         <Button variant="ghost" size="icon" className="border text-muted-foreground hover:text-[var(--color-brand-gold)] border-border" title="Request Extension">
                           <CalendarClock className="w-4 h-4" />
                         </Button>

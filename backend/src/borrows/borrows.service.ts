@@ -12,6 +12,12 @@ export class BorrowsService {
 
   async borrowBook(userId: string, bookId: string) {
     return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) throw new NotFoundException('User not found');
+      if (user.accountStatus === 'UNDER_PENALTY' || user.accountStatus === 'RESTRICTED' || user.accountStatus === 'SUSPENDED') {
+        throw new BadRequestException('Your account is currently restricted from borrowing.');
+      }
+
       // 1. Check availability
       const book = await tx.book.findUnique({ where: { id: bookId } });
       if (!book) throw new NotFoundException('Book not found');
@@ -129,18 +135,24 @@ export class BorrowsService {
     });
   }
 
-  async returnBook(userId: string, borrowRecordId: string) {
+  async adminReturnBook(adminId: string, borrowRecordId: string) {
     return this.prisma.$transaction(async (tx) => {
       const record = await tx.borrowRecord.findUnique({
         where: { id: borrowRecordId },
-        include: { book: true }
+        include: { book: true, user: true }
       });
       
-      if (!record || record.userId !== userId) {
+      if (!record) {
         throw new NotFoundException('Borrow record not found');
       }
       if (record.status === BorrowStatus.RETURNED) {
         throw new BadRequestException('Book is already returned');
+      }
+
+      const now = new Date();
+      let isLate = false;
+      if (now > record.dueDate) {
+        isLate = true;
       }
 
       // 1. Mark as returned
@@ -148,7 +160,7 @@ export class BorrowsService {
         where: { id: borrowRecordId },
         data: {
           status: BorrowStatus.RETURNED,
-          returnedAt: new Date(),
+          returnedAt: now,
         },
       });
 
@@ -157,6 +169,53 @@ export class BorrowsService {
         where: { id: record.bookId },
         data: { availableCopies: record.book.availableCopies + 1 },
       });
+
+      // 3. Handle Penalties if late
+      if (isLate) {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        await tx.penalty.create({
+          data: {
+            userId: record.userId,
+            borrowRecordId: record.id,
+            reason: 'Late return of book',
+            endDate,
+          }
+        });
+
+        await tx.warning.create({
+          data: {
+            userId: record.userId,
+            borrowRecordId: record.id,
+            reason: 'Late return of book',
+          }
+        });
+
+        const warningsCount = await tx.warning.count({ where: { userId: record.userId } });
+        let newStatus = 'UNDER_PENALTY';
+        if (warningsCount + 1 >= 3) {
+          newStatus = 'RESTRICTED';
+        }
+
+        await tx.user.update({
+          where: { id: record.userId },
+          data: { accountStatus: newStatus as any },
+        });
+
+        await this.notificationsService.notify(
+          record.userId,
+          "Penalty Applied",
+          `You returned a book late. A 30-day borrowing penalty has been applied.`,
+          "SYSTEM"
+        );
+      } else {
+         await this.notificationsService.notify(
+          record.userId,
+          "Book Returned",
+          `Your return of "${record.book.title}" has been successfully recorded.`,
+          "BOOK_RETURNED"
+        );
+      }
 
       return updatedRecord;
     });
@@ -202,6 +261,52 @@ export class BorrowsService {
         extensions: true,
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async approveExtension(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const req = await tx.extensionRequest.findUnique({
+        where: { id },
+        include: { borrowRecord: { include: { book: true } } }
+      });
+      if (!req || req.status !== 'PENDING' || !req.newDueDate) throw new BadRequestException('Invalid extension request');
+      
+      await tx.extensionRequest.update({
+        where: { id },
+        data: { status: 'APPROVED' }
+      });
+
+      await tx.borrowRecord.update({
+        where: { id: req.borrowRecordId },
+        data: { dueDate: req.newDueDate, isExtended: true }
+      });
+
+      await this.notificationsService.notify(
+        req.userId,
+        "Extension Approved",
+        `Your extension request for "${req.borrowRecord.book.title}" has been approved. New due date is ${req.newDueDate.toLocaleDateString()}.`,
+        "EXTENSION_APPROVED"
+      );
+      return req;
+    });
+  }
+
+  async rejectExtension(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const req = await tx.extensionRequest.update({
+        where: { id },
+        data: { status: 'REJECTED' },
+        include: { borrowRecord: { include: { book: true } } }
+      });
+
+      await this.notificationsService.notify(
+        req.userId,
+        "Extension Rejected",
+        `Your extension request for "${req.borrowRecord.book.title}" was rejected.`,
+        "EXTENSION_REJECTED"
+      );
+      return req;
     });
   }
 }

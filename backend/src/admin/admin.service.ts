@@ -54,4 +54,35 @@ export class AdminService {
       categoryDistribution
     };
   }
+
+  async getUsers() {
+    return this.prisma.user.findMany({
+      include: {
+        penalties: { where: { isActive: true } },
+        warnings: true,
+        _count: { select: { borrowRecords: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async updateUserStatus(userId: string, status: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { accountStatus: status as any }
+    });
+  }
+
+  async addWarning(userId: string, reason: string) {
+    return this.prisma.warning.create({
+      data: { userId, reason }
+    });
+  }
+
+  async removePenalty(userId: string, penaltyId: string) {
+    return this.prisma.penalty.update({
+      where: { id: penaltyId },
+      data: { isActive: false }
+    });
+  }
 }
