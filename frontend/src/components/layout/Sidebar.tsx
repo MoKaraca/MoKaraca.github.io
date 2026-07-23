@@ -28,9 +28,9 @@ const mainNavItems = [
 ];
 
 const adminNavItems = [
-  { title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
-  { title: "Requests", icon: Inbox, href: "/admin/requests" },
-  { title: "Returns", icon: ArrowLeftRight, href: "/admin/returns" },
+  { title: "nav.dashboard", icon: LayoutDashboard, href: "/admin" },
+  { title: "nav.requests", icon: Inbox, href: "/admin/requests" },
+  { title: "nav.returns", icon: ArrowLeftRight, href: "/admin/returns" },
   { title: "nav.manage_books", icon: BookMarked, href: "/admin/books" },
   { title: "nav.users", icon: Users, href: "/admin/users" },
   { title: "nav.settings", icon: Settings, href: "/admin/settings" },

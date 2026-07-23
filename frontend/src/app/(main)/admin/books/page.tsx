@@ -26,19 +26,49 @@ export default function AdminBooksPage() {
   const { data: books, isLoading, mutate } = useSWR('/books', api.get);
   const bookList = books || [];
 
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isBookDialogOpen, setIsBookDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     author: "",
     isbn: "",
     categoryId: "",
+    newCategoryName: "",
     totalCopies: 1,
     pageCount: 100,
+    publishedYear: 2024,
     description: "",
     publisher: "",
     language: "ar",
   });
+
+  const openAddDialog = () => {
+    setEditingId(null);
+    setFormData({ 
+      title: "", author: "", isbn: "", categoryId: "", newCategoryName: "",
+      totalCopies: 1, pageCount: 100, publishedYear: new Date().getFullYear(), description: "", publisher: "", language: "ar" 
+    });
+    setIsBookDialogOpen(true);
+  };
+
+  const openEditDialog = (book: any) => {
+    setEditingId(book.id);
+    setFormData({
+      title: book.title || "",
+      author: book.author || "",
+      isbn: book.isbn || "",
+      categoryId: book.categoryId || "",
+      newCategoryName: "",
+      totalCopies: book.totalCopies || 1,
+      pageCount: book.pageCount || 100,
+      publishedYear: book.publishedYear || new Date().getFullYear(),
+      description: book.description || "",
+      publisher: book.publisher || "",
+      language: book.language || "ar",
+    });
+    setIsBookDialogOpen(true);
+  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this book?")) {
@@ -51,24 +81,38 @@ export default function AdminBooksPage() {
     }
   };
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { categoryId, ...rest } = formData;
-      await api.post('/books', {
+      const { categoryId, newCategoryName, ...rest } = formData;
+      let categoryPayload = {};
+      if (categoryId === "NEW" && newCategoryName) {
+        categoryPayload = { 
+          create: { 
+            name: newCategoryName, 
+            slug: newCategoryName.toLowerCase().replace(/ /g, '-') 
+          } 
+        };
+      } else if (categoryId && categoryId !== "NEW") {
+        categoryPayload = { connect: { id: categoryId } };
+      }
+
+      const payload = {
         ...rest,
         availableCopies: formData.totalCopies,
-        category: { connect: { id: categoryId } }
-      });
-      setIsAddOpen(false);
+        ...(Object.keys(categoryPayload).length > 0 && { category: categoryPayload })
+      };
+
+      if (editingId) {
+        await api.patch(`/books/${editingId}`, payload);
+      } else {
+        await api.post('/books', payload);
+      }
+      setIsBookDialogOpen(false);
       mutate();
-      setFormData({ 
-        title: "", author: "", isbn: "", categoryId: "", 
-        totalCopies: 1, pageCount: 100, description: "", publisher: "", language: "ar" 
-      });
     } catch (err) {
-      alert("Failed to add book");
+      alert(editingId ? "Failed to edit book" : "Failed to add book");
     } finally {
       setIsSubmitting(false);
     }
@@ -89,16 +133,16 @@ export default function AdminBooksPage() {
           <h1 className="text-3xl font-bold tracking-tight">{t("admin_books.title")}</h1>
           <p className="text-muted-foreground">{t("admin_books.desc")}</p>
         </div>
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger render={<Button className="bg-[var(--color-brand-green)] hover:bg-[#15462a] text-white" />}>
+        <Dialog open={isBookDialogOpen} onOpenChange={setIsBookDialogOpen}>
+          <Button onClick={openAddDialog} className="bg-[var(--color-brand-green)] hover:bg-[#15462a] text-white">
             <Plus className="mr-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {t("admin_books.add")}
-          </DialogTrigger>
-          <DialogContent>
+          </Button>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{t("admin_books.add.title")}</DialogTitle>
-              <DialogDescription>{t("admin_books.add.desc")}</DialogDescription>
+              <DialogTitle>{editingId ? "Edit Book" : t("admin_books.add.title")}</DialogTitle>
+              <DialogDescription>{editingId ? "Update book details." : t("admin_books.add.desc")}</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t("admin_books.add.field.title")}</Label>
@@ -119,12 +163,13 @@ export default function AdminBooksPage() {
                 <div className="space-y-2">
                   <Label>{t("admin_books.table.category")}</Label>
                   <select 
-                    required 
+                    required={!editingId}
                     value={formData.categoryId} 
                     onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-9 w-full rounded-md border border-input bg-background dark:bg-zinc-950 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="" disabled>Select Category</option>
+                    <option value="NEW" className="font-bold text-[var(--color-brand-gold)]">+ Create New Category</option>
                     {uniqueCategories.map((cat: any) => (
                       <option key={cat.id} value={cat.id}>{t(
                         cat.name === "Computer Science" ? "cat.cs" :
@@ -137,11 +182,21 @@ export default function AdminBooksPage() {
                     ))}
                   </select>
                 </div>
+                {formData.categoryId === "NEW" && (
+                  <div className="space-y-2 col-span-2">
+                    <Label>New Category Name</Label>
+                    <Input required value={formData.newCategoryName} onChange={(e) => setFormData({...formData, newCategoryName: e.target.value})} placeholder="E.g. Science Fiction" />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>{t("admin_books.add.field.pageCount")}</Label>
                   <Input type="number" required min={1} value={formData.pageCount} onChange={(e) => setFormData({...formData, pageCount: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-2">
+                  <Label>Published Year</Label>
+                  <Input type="number" required value={formData.publishedYear} onChange={(e) => setFormData({...formData, publishedYear: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-2 col-span-2">
                   <Label>{t("admin_books.add.field.language")}</Label>
                   <Input required value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} />
                 </div>
@@ -151,13 +206,17 @@ export default function AdminBooksPage() {
                 </div>
                 <div className="space-y-2 col-span-2">
                   <Label>{t("admin_books.add.field.description")}</Label>
-                  <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                  <textarea 
+                    value={formData.description} 
+                    onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>{t("admin_books.add.btn.cancel")}</Button>
+                <Button type="button" variant="outline" onClick={() => setIsBookDialogOpen(false)}>{t("admin_books.add.btn.cancel")}</Button>
                 <Button type="submit" disabled={isSubmitting} className="bg-[var(--color-brand-green)] text-white hover:bg-[#15462a]">
-                  {isSubmitting ? t("admin_books.add.btn.submitting") : t("admin_books.add.btn.submit")}
+                  {isSubmitting ? (editingId ? "Updating..." : t("admin_books.add.btn.submitting")) : (editingId ? "Update Book" : t("admin_books.add.btn.submit"))}
                 </Button>
               </DialogFooter>
             </form>
@@ -224,10 +283,10 @@ export default function AdminBooksPage() {
                       <MoreHorizontal className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openEditDialog(book)} className="cursor-pointer">
                         <Edit className="mr-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {t("admin_books.action.edit")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(book.id)} className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => handleDelete(book.id)} className="text-destructive focus:text-destructive cursor-pointer">
                         <Trash2 className="mr-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {t("admin_books.action.delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -18,6 +18,7 @@ const translations = {
     "nav.borrows": "My Borrows",
     "nav.bookmarks": "Bookmarks",
     "nav.dashboard": "Dashboard",
+
     "nav.manage_books": "Manage Books",
     "nav.users": "Users",
     "nav.settings": "Settings",
@@ -234,6 +235,7 @@ const translations = {
     "nav.borrows": "استعاراتي",
     "nav.bookmarks": "العلامات المرجعية",
     "nav.dashboard": "لوحة التحكم",
+
     "nav.manage_books": "إدارة الكتب",
     "nav.users": "المستخدمين",
     "nav.settings": "الإعدادات",
