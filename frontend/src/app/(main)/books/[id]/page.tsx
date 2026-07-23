@@ -8,7 +8,7 @@ import { BookOpen, Calendar, Globe, Building, FileText, Share2, Heart, ArrowLeft
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -38,9 +38,10 @@ export default function BookDetailsPage({ params }: { params: Promise<{ id: stri
     try {
       await api.post(`/borrows/${book.id}`);
       setIsBorrowSuccess(true);
+      mutate('/borrows/my');
       setTimeout(() => {
         router.push("/my-books");
-      }, 1500);
+      }, 500);
     } catch (e: any) {
       toast.error(e?.response?.data?.message || e?.message || "Failed to borrow book");
     }

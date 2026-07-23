@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { TypewriterText } from "@/components/animations/TypewriterText";
 import { CountUpNumber } from "@/components/animations/CountUpNumber";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Mail, Eye, Moon, Sun, Globe } from "lucide-react";
+import { Loader2, Mail, Eye, EyeOff, Moon, Sun, Globe } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/components/language-provider";
 import { useAuthStore } from "@/lib/store/useAuthStore";
@@ -23,6 +23,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isFormLoading, setIsFormLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const handleComplete = useCallback(() => setSubtitleStarted(true), []);
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   
@@ -111,7 +114,7 @@ export default function LoginPage() {
                     key={language}
                     text={t("login.welcome")}
                     speed={60}
-                    onComplete={() => setSubtitleStarted(true)}
+                    onComplete={handleComplete}
                   />
                 </h1>
                 <div className="text-muted-foreground text-sm h-5">
@@ -159,14 +162,20 @@ export default function LoginPage() {
                   <div className="relative">
                     <Input
                       id="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder={t("login.password_placeholder")}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="px-4 py-6 rtl:pl-10 rtl:pr-4 bg-background/50 border-input rounded-xl text-lg tracking-widest text-left rtl:text-right"
+                      className={`px-4 py-6 rtl:pl-10 rtl:pr-4 bg-background/50 border-input rounded-xl text-lg text-left rtl:text-right ${!showPassword ? 'tracking-widest' : ''}`}
                     />
-                    <Eye className="absolute right-3 rtl:right-auto rtl:left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 rtl:right-auto rtl:left-3 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                   </div>
                 </motion.div>
 

@@ -72,7 +72,7 @@ export default function HomePage() {
           <p className="text-lg text-muted-foreground mb-8">
             {t("home.subtitle")}
           </p>
-          <form onSubmit={handleSearch} className="flex gap-4 max-w-md w-full mb-8">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 max-w-md w-full mb-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground rtl:right-3 rtl:left-auto" />
               <Input
@@ -87,14 +87,14 @@ export default function HomePage() {
               {t("action.search") || "Search"}
             </Button>
           </form>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/books">
-              <Button variant="outline" className="px-8 py-6 rounded-xl text-md border-[var(--color-brand-gold)] text-[var(--color-brand-gold)] hover:bg-[var(--color-brand-gold)]/10">
+              <Button variant="outline" className="w-full sm:w-auto px-8 py-6 rounded-xl text-md border-[var(--color-brand-gold)] text-[var(--color-brand-gold)] hover:bg-[var(--color-brand-gold)]/10">
                 {t("home.btn.browse")}
               </Button>
             </Link>
             <Link href="/my-books">
-              <Button variant="ghost" className="px-8 py-6 rounded-xl text-md text-foreground hover:bg-muted">
+              <Button variant="ghost" className="w-full sm:w-auto px-8 py-6 rounded-xl text-md text-foreground hover:bg-muted">
                 {t("home.btn.borrows")}
               </Button>
             </Link>
