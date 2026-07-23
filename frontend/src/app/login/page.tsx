@@ -91,7 +91,7 @@ export default function LoginPage() {
           <Card className="border-0 shadow-xl bg-card rounded-3xl p-6 sm:p-10">
             <CardContent className="p-0">
               {/* Logo Animation */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-8 mt-12 md:mt-0">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -185,7 +185,7 @@ export default function LoginPage() {
                   transition={{ duration: 0.4, delay: 1.6 }}
                   className="flex items-center justify-between text-sm"
                 >
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                  <div className="flex items-center gap-2">
                     <Checkbox id="remember" className="rounded-md border-muted-foreground" />
                     <label htmlFor="remember" className="font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       {t("login.remember")}

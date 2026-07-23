@@ -267,7 +267,7 @@ const translations = {
     "login.stats.students": "الطلاب",
     "login.stats.events": "الفعاليات",
     "login.stats.opportunities": "الفرص",
-    "login.org": "اتحاد الطلبة السوريين في أرضروم",
+    "login.org": "اتحاد الطلبة السوريين في أرزروم",
 
     // Home Page
     "home.welcome": "مرحباً بعودتك، {name}!",
