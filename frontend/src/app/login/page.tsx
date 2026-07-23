@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-background font-sans overflow-hidden">
       {/* Top Left Theme Toggle */}
-      <div className="absolute top-6 right-6 rtl:left-6 rtl:right-auto z-50">
+      <div className="absolute top-6 left-6 rtl:left-auto rtl:right-6 z-50">
         <Button
           variant="outline"
           size="icon"
